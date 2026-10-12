@@ -1,0 +1,37 @@
+From d28edf8b3722d2b3f8ae23bd225c733184b0802e Mon Sep 17 00:00:00 2001
+From: "Darrick J. Wong" <djwong@kernel.org>
+Date: Thu, 1 Oct 2026 07:50:47 -0700
+Subject: xfs_healer: correct xfd_ API usage
+
+This callsite is wrong -- the xfd_* functions return 0 on success or
+negative errno on failure, so we should be using strerror on the value
+provided, and not perror, which uses errno.  Fix this to be consistent
+with the other xfsprogs utilities.
+
+Cc: linux-xfs@vger.kernel.org # v7.0.0
+Fixes: b9b03770197d19 ("xfs_healer: create daemon to listen for health events")
+Signed-off-by: "Darrick J. Wong" <djwong@kernel.org>
+Reviewed-by: Andrey Albershteyn <aalbersh@kernel.org>
+---
+ healer/xfs_healer.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/healer/xfs_healer.c b/healer/xfs_healer.c
+index ec402a78d5..8fa58b742a 100644
+--- a/healer/xfs_healer.c
++++ b/healer/xfs_healer.c
+@@ -315,9 +315,9 @@ setup_monitor(
+ 	int			mon_fd;
+ 	int			ret;
+ 
+-	ret = xfd_open(&ctx->mnt, ctx->mntpoint, O_RDONLY);
++	ret = -xfd_open(&ctx->mnt, ctx->mntpoint, O_RDONLY);
+ 	if (ret) {
+-		perror(ctx->mntpoint);
++		fprintf(stderr, "%s: %s\n", ctx->mntpoint, strerror(ret));
+ 		return outcome;
+ 	}
+ 
+-- 
+cgit 1.3.1-korg
+
