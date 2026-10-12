@@ -1,2 +1,10 @@
-apt_src xfsprogs
+# FIXME: the package-build should be fixed
+
+apt-get source --only-source --download-only xfsprogs
+
+rm -rf "$dir/src"
+dpkg-source -x *.dsc "$dir/src"
+
+cat xfsprogs_*.orig.tar.xz | xz -d > "$dir/orig.tar"
+
 import_upstream_patches
